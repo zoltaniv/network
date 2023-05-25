@@ -1,0 +1,48 @@
+#demo {
+  width: 600px;
+}
+
+.post {
+  background: 50% ghostwhite;
+  border: solid 1px;
+}
+
+.post-text {
+  font-family: "Roboto", sans-serif;
+}
+
+.post-date {
+  font-size: 14px;
+  color: darkgray;
+}
+
+.post-like {
+  border-radius: 20%;
+  border: 1px solid black;
+  background-color: grey;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.post-like:hover {
+  border: 3px solid darkgreen;
+}
+
+.fa {
+  font-size: 20px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.avatar {
+  vertical-align: middle;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin: 8px;
+}
+
+.score {
+  font-size: 14px;
+  color: white;
+}

@@ -1,5 +1,57 @@
 {% extends "network/layout.html" %}
+{% load static %}
 
 {% block body %}
-    TODO
+    
+    <!-- If user is actived -->
+    {% if user.is_authenticated %}
+        <!-- Post form -->
+        <!-- Offcanvas Sidebar -->
+        <div class="offcanvas offcanvas-end" id="demo">
+            <div class="offcanvas-header">
+                <h1 class="offcanvas-title">New post</h1>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
+            </div>
+            <div class="offcanvas-body">
+                <form action="{% url 'index' %}" method="post" class="">
+                    {% csrf_token %} 
+                    {{ post_form.as_p }}
+                    <button class="btn btn-secondary" type="submit">Send post</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Button to open the offcanvas sidebar -->
+        <button class="btn btn-primary m-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#demo">
+            Leave new post
+        </button>
+    {% endif %}
+
+    <div class="flex-column">
+        {% for post in posts %}
+            <div class="col-6 m-4 ms-3 rounded post">
+
+                <h5 class=" pt-3 pb-0 m-0 post-author">
+                    <img src="{% static 'network/images/colorfull_avatar.jpg' %}" alt="Avatar" class="avatar">
+
+                    <a href="{% url 'profile' user_id=post.author.id user_name=post.author.username %}"><b>{{ post.author }}</b></a>
+                </h5>
+                <p class=" pt-1 post-text">{{ post.text }}</p>
+                <p class="post-date">{{ post.date }}</p>
+
+                <div>
+                    <button class="m-2 post-like" id="{{ post.id }}">
+                        <i class="fa fa-thumbs-up" style="color: white;"></i>
+                        <span class="score"> {{ post.plikes.count }} </span>
+                    </button>
+                </div>
+
+            </div>
+        {% endfor %}
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'network/inbox.js' %}"></script>
 {% endblock %}

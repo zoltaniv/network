@@ -99,21 +99,20 @@ def load_profile(request, user_id, user_name):
     # user_object_subscriptions = user_object.subscriptions.all()
     
     if request.method == "PUT":
-        data = json.loads(request.body)
-        
-        if data["subscribe"]:
+        try:
+            my_subscription = Subscription.objects.get(follower=User(pk=request.user.id))
             try:
-                my_subscription = Subscription.objects.get(follower=User(pk=request.user.id))
-                my_subscription.subscribers.add(user_object)
-            except ObjectDoesNotExist:
-                my_subscription = Subscription(follower=User(pk=request.user.id))
-                my_subscription.save()
-                my_subscription.subscribers.add(user_object)
-            subscription = 0
-        else:
-                my_subscription = Subscription.objects.get(follower=User(pk=request.user.id))
+                my_subscription.subscribers.get(pk=user_id)
                 my_subscription.subscribers.remove(user_object)
                 subscription = 1
+            except ObjectDoesNotExist:
+                    my_subscription.subscribers.add(user_object)
+                    subscription = 0
+        except ObjectDoesNotExist:
+            my_subscription = Subscription(follower=User(pk=request.user.id))
+            my_subscription.save()
+            my_subscription.subscribers.add(user_object)
+            subscription = 0
                 
         user_object_followers = user_object.followers.count()
         return JsonResponse({"subscription": subscription, 

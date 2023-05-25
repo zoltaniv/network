@@ -27,44 +27,27 @@ document.addEventListener("DOMContentLoaded", function () {
     };
   }
 
-    if (document.getElementById("subbutton")) {
-      const subbutton = document.getElementById("subbutton");
-      subbutton.onclick = function () {
-        if (subbutton.textContent == 'Subscribe') {
-          fetch(`${window.location.pathname}`, {
-            method: "PUT",
-            headers: { "X-CSRFToken": `${csrftoken}` },
-            body: JSON.stringify({ subscribe: true }),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.subscription == 0) {
-                document.getElementById("followers").innerHTML =
-                  data.user_object_followers;
-                document.getElementById("subbutton").innerHTML = "Unsubscribe";
-              }
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-        } else {
-          fetch(`${window.location.pathname}`, {
-            method: "PUT",
-            headers: { "X-CSRFToken": `${csrftoken}` },
-            body: JSON.stringify({ subscribe: false }),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.subscription == 1) {
-                document.getElementById("followers").innerHTML =
-                  data.user_object_followers;
-                document.getElementById("subbutton").innerHTML = "Subscribe";
-              }
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-        }
-      };
-    }
+  if (document.getElementById("subbutton")) {
+    const subbutton = document.getElementById("subbutton");
+
+    subbutton.onclick = function () {
+      fetch(`${window.location.pathname}`, {
+        method: "PUT",
+        headers: { "X-CSRFToken": `${csrftoken}` },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          document.getElementById("followers").innerHTML =
+            data.user_object_followers;
+          if (data.subscription == 0) {
+            document.getElementById("subbutton").innerHTML = "Unsubscribe";
+          } else {
+            document.getElementById("subbutton").innerHTML = "Subscribe";
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
+  }
 });

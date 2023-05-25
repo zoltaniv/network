@@ -16,7 +16,7 @@
                     <b>{{ user_object.username }}</b>
                 </h2>
                 <div>
-                    <i class="post-date">My followers: <span id="followers">{{ user_object.followers.count }}</span> users</i>
+                    <i class="post-date">My followers: <span id="followers">{{ user_object.followers.count }}</span> users</i><br>
                     {% if user_object.subscriptions.first.subscribers.count is None %}
                         <i class="post-date">I followed: 0 users</i>
                     {% else %}

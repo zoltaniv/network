@@ -1,0 +1,41 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block body %}
+    
+    <!-- If user is actived -->
+    {% if user.is_authenticated %}
+       
+        <div class="flex-column">
+            {% for post in allposts %}
+
+                <div class="col-6 m-4 ms-3 rounded post">
+
+                    <h5 class=" pt-3 pb-0 m-0 post-author">
+                        <img src="{% static 'network/images/colorfull_avatar.jpg' %}" alt="Avatar" class="avatar">
+
+                        <b>{{ post.author.username }}</b>
+                    </h5>
+                    <p class=" pt-1 post-text">{{ post.text }}</p>
+                    <p class="post-date">{{ post.date }}</p>
+
+                    <div>
+                        <button class="m-2 post-like" id="{{ post.id }}">
+                            <i class="fa fa-thumbs-up" style="color: white;"></i>
+                            <span class="score"> {{ post.plikes.count }} </span>
+                        </button>
+                    </div>
+
+                </div>
+            {% empty %}
+                {{ message }}
+            {% endfor %}
+        </div>
+
+    {% endif %}
+
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'network/inbox.js' %}"></script>
+{% endblock %}

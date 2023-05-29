@@ -97,28 +97,53 @@ def register(request):
 def load_profile(request, user_id, user_name):
     user_object = User.objects.get(pk=user_id)
     # user_object_subscriptions = user_object.subscriptions.all()
-    
+
     if request.method == "PUT":
         try:
-            my_subscription = Subscription.objects.get(follower=User(pk=request.user.id))
+            my_subscription = Subscription.objects.get(
+                follower=User(pk=request.user.id))
             try:
                 my_subscription.subscribers.get(pk=user_id)
                 my_subscription.subscribers.remove(user_object)
                 subscription = 1
             except ObjectDoesNotExist:
-                    my_subscription.subscribers.add(user_object)
-                    subscription = 0
+                my_subscription.subscribers.add(user_object)
+                subscription = 0
         except ObjectDoesNotExist:
             my_subscription = Subscription(follower=User(pk=request.user.id))
             my_subscription.save()
             my_subscription.subscribers.add(user_object)
             subscription = 0
-                
+
         user_object_followers = user_object.followers.count()
-        return JsonResponse({"subscription": subscription, 
-                                "user_object_followers": user_object_followers}, status=201)
-            
-            
-    my_subscriptions_list = Subscription.objects.filter(follower=request.user.id)
+        return JsonResponse({"subscription": subscription,
+                             "user_object_followers": user_object_followers}, status=201)
+
+    my_subscriptions_list = Subscription.objects.filter(
+        follower=request.user.id)
     return render(request, "network/profile.html",
                   {"user_object": user_object, "my_subscriptions_list": my_subscriptions_list})
+
+
+def load_following(request):
+    allposts = []
+    try:
+        my_subscription = Subscription.objects.get(
+            follower=User(pk=request.user.id))
+        my_subscribers = my_subscription.subscribers.all()
+        
+        for subscriber in my_subscribers:
+            subscriber_posts = subscriber.myposts.all()
+            for post in subscriber_posts:
+                allposts.append(post)
+                
+    except ObjectDoesNotExist:
+        return render(request, "network/following.html", 
+                  {"message": "You don't have following!"})
+        
+    def myFunc (post):
+        return post.date
+    allposts.sort(reverse=True, key=myFunc)
+    
+    return render(request, "network/following.html", 
+                  {"allposts": allposts})

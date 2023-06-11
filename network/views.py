@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.urls import reverse
 import json
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.core.paginator import Paginator
 
 
 from .models import User, Post, Like, Subscription
@@ -17,29 +18,35 @@ def index(request):
         posttext = request.POST["text"]
         author = User(request.user.id)
         Post(text=posttext, author=author).save()
-        posts = Post.objects.order_by("-date").all()
-        return render(request, "network/index.html",
-                      {"post_form": PostForm(), "posts": posts})
-
+        
     elif request.method == "PUT":
         data = json.loads(request.body)
         post = Post.objects.get(pk=data["post"])
 
-        try:
-            like = post.plikes.get(author=request.user.id)
-        except ObjectDoesNotExist:
-            Like(post=Post(data["post"]),
-                 author=User(request.user.id)).save()
-            likes = post.plikes.count()
-            return JsonResponse({"likes": likes}, status=201)
-        else:
-            like.delete()
-            likes = post.plikes.count()
-            return JsonResponse({"likes": likes, "deleted": True}, status=202)
-    else:
-        posts = Post.objects.order_by("-date").all()
-        return render(request, "network/index.html",
-                      {"post_form": PostForm(), "posts": posts})
+        if data["likeButton"]:
+            try:
+                like = post.plikes.get(author=request.user.id)
+            except ObjectDoesNotExist:
+                Like(post=Post(data["post"]),
+                    author=User(request.user.id)).save()
+                likes = post.plikes.count()
+                return JsonResponse({"likes": likes}, status=201)
+            else:
+                like.delete()
+                likes = post.plikes.count()
+                return JsonResponse({"likes": likes, "deleted": True},
+                                    status=202)
+        if data["saveChangesButton"]:
+            post.text = data["text"]
+            post.save()
+            return JsonResponse({"text": data["text"]}, status=203)
+        
+    p = Paginator(Post.objects.order_by("-date").all(), 3, 2)
+    page = request.GET.get("page")
+    page_view = p.get_page(page)
+
+    return render(request, "network/index.html",
+                    {"post_form": PostForm(), "page_view": page_view})
 
 
 def login_view(request):
@@ -86,8 +93,7 @@ def register(request):
             user.save()
         except IntegrityError:
             return render(request, "network/register.html", {
-                "message": "Username already taken."
-            })
+                "message": "Username already taken."})
         login(request, user)
         return HttpResponseRedirect(reverse("index"))
     else:
@@ -96,7 +102,6 @@ def register(request):
 
 def load_profile(request, user_id, user_name):
     user_object = User.objects.get(pk=user_id)
-    # user_object_subscriptions = user_object.subscriptions.all()
 
     if request.method == "PUT":
         try:
@@ -121,8 +126,15 @@ def load_profile(request, user_id, user_name):
 
     my_subscriptions_list = Subscription.objects.filter(
         follower=request.user.id)
+    
+    p = Paginator(user_object.myposts.all().order_by("-date"), 3, 2)
+    page = request.GET.get("page")
+    page_view = p.get_page(page)
+    
     return render(request, "network/profile.html",
-                  {"user_object": user_object, "my_subscriptions_list": my_subscriptions_list})
+                  {"user_object": user_object,
+                   "my_subscriptions_list": my_subscriptions_list,
+                   "page_view": page_view})
 
 
 def load_following(request):
@@ -131,19 +143,23 @@ def load_following(request):
         my_subscription = Subscription.objects.get(
             follower=User(pk=request.user.id))
         my_subscribers = my_subscription.subscribers.all()
-        
+
         for subscriber in my_subscribers:
             subscriber_posts = subscriber.myposts.all()
             for post in subscriber_posts:
                 allposts.append(post)
-                
+
     except ObjectDoesNotExist:
-        return render(request, "network/following.html", 
-                  {"message": "You don't have following!"})
-        
-    def myFunc (post):
+        return render(request, "network/following.html",
+                      {"message": "You don't have following!"})
+
+    def myFunc(post):
         return post.date
     allposts.sort(reverse=True, key=myFunc)
     
-    return render(request, "network/following.html", 
-                  {"allposts": allposts})
+    p = Paginator(allposts, 3, 2)
+    page = request.GET.get("page")
+    page_view = p.get_page(page)
+
+    return render(request, "network/following.html",
+                  {"page_view": page_view})

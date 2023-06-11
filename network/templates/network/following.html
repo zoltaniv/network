@@ -7,7 +7,7 @@
     {% if user.is_authenticated %}
        
         <div class="flex-column">
-            {% for post in allposts %}
+            {% for post in page_view.object_list %}
 
                 <div class="col-6 m-4 ms-3 rounded post">
 
@@ -33,6 +33,28 @@
         </div>
 
     {% endif %}
+
+    <!-- Pagination -->
+    <!-- ======================================================================================== -->
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            {% if page_view.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_view.previous_page_number }}">Previous</a></li>
+            {% endif %}
+            {% for n in page_view.paginator.page_range %}
+                {% if page_view.number == n %}
+                    <li class="page-item active"><a class="page-link" href="?page={{ n }}">{{ n }}</a></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ n }}">{{ n }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if page_view.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_view.next_page_number }}">Next</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_view.paginator.num_pages }}">Last &raquo;</a></li>
+            {% endif %}
+        </ul>
+    </nav>
 
 {% endblock %}
 

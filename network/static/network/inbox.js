@@ -9,7 +9,11 @@ document.addEventListener("DOMContentLoaded", function () {
       fetch("/", {
         method: "PUT",
         headers: { "X-CSRFToken": `${csrftoken}` },
-        body: JSON.stringify({ post: this.id }),
+        body: JSON.stringify({
+          post: this.id,
+          likeButton: true,
+          saveChangesButton: false
+        }),
       })
         .then((response) => response.json())
         .then((data) => {
@@ -49,5 +53,44 @@ document.addEventListener("DOMContentLoaded", function () {
           console.log(error);
         });
     };
+  }
+
+  // Create edit function ============================================================================
+  if (document.querySelector(".post-edit")) {
+    const editButtons = document.getElementsByClassName("post-edit");
+    for (let i = 0; i < editButtons.length; i++) {
+      editButtons[i].onclick = function () {
+        const textarea = document.createElement("textarea");
+        textarea.className = "edit-area";
+        textarea.innerHTML = this.parentNode.childNodes[3].textContent;
+        this.parentNode.childNodes[3].appendChild(textarea);
+        this.parentNode.childNodes[3].firstChild.remove();
+        const saveButton = this.nextElementSibling;
+        saveButton.style.display = "block";
+        this.style.display = "none";
+        saveButton.onclick = function () {
+          fetch("/", {
+            method: "PUT",
+            headers: { "X-CSRFToken": `${csrftoken}` },
+            body: JSON.stringify({
+              post: this.parentNode.childNodes[7].id,
+              text: textarea.value,
+              saveChangesButton: true,
+              likeButton: false,
+            }),
+          })
+            .then((response) => response.json())
+            .then((post) => {
+              if (post["text"]) {
+                const textNode = document.createTextNode(post.text);
+                this.parentNode.childNodes[3].firstElementChild.remove();
+                this.parentNode.childNodes[3].appendChild(textNode);
+                this.style.display = "none";
+                this.previousElementSibling.style.display = "block";
+              }
+            });
+        };
+      };
+    }
   }
 });

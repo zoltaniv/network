@@ -2,10 +2,6 @@
 {% load static %}
 
 {% block body %}
-    
-    <!-- If user is actived -->
-    {% if user.is_authenticated %}
-    {% endif %}
 
     <div class="flex-column">
 
@@ -25,7 +21,7 @@
                 </div>
                 <br>
             </div>
-            {% if user_object.id != user.id %}
+            {% if user_object.id != user.id and user.is_authenticated %}
                 <div id="subscription">
                     {% if my_subscriptions_list.first in user_object.followers.all %}
                         <button id="subbutton" class="btn btn-dark">Unsubscribe</button>
@@ -36,7 +32,7 @@
              {% endif %}
         </div>
 
-        {% for post in user_object.myposts.all %}
+        {% for post in page_view.object_list %}
             <div class="col-6 m-4 ms-3 rounded post">
 
                 <h5 class=" pt-3 pb-0 m-0 post-author">
@@ -45,16 +41,44 @@
                 <p class=" pt-1 post-text">{{ post.text }}</p>
                 <p class="post-date">{{ post.date }}</p>
 
-                <div>
-                    <button class="m-2 post-like" id="{{ post.id }}">
-                        <i class="fa fa-thumbs-up" style="color: white;"></i>
-                        <span class="score"> {{ post.plikes.count }} </span>
+                <button class="m-2 post-like" id="{{ post.id }}">
+                    <i class="fa fa-thumbs-up" style="color: white;"></i>
+                    <span class="score"> {{ post.plikes.count }} </span>
+                </button>
+                <br>
+                {% if post.author.id == user.id %}
+                    <button class="btn btn-primary m-2 post-edit" type="button">
+                            Edit post
                     </button>
-                </div>
+                    <button class="btn btn-info m-2 save-changes" type="button" style="display: none;">
+                            Save changes
+                    </button>
+                {% endif %}
 
             </div>
         {% endfor %}
     </div>
+     <!-- Pagination -->
+    <!-- ======================================================================================== -->
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            {% if page_view.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_view.previous_page_number }}">Previous</a></li>
+            {% endif %}
+            {% for n in page_view.paginator.page_range %}
+                {% if page_view.number == n %}
+                    <li class="page-item active"><a class="page-link" href="?page={{ n }}">{{ n }}</a></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ n }}">{{ n }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if page_view.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_view.next_page_number }}">Next</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_view.paginator.num_pages }}">Last &raquo;</a></li>
+            {% endif %}
+        </ul>
+    </nav>
 
 {% endblock %}
 

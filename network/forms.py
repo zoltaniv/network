@@ -7,7 +7,7 @@ class PostForm(forms.ModelForm):
         model = Post
         fields = ["text"]
         widgets = {"text": forms.Textarea(attrs={
-            "autofocus": True, # Do not work!!!
+            "autofocus":"", # Do not work!!!
             "placeholder": "Input your post here",
             "rows": 5,
             "cols": 55,
